@@ -23,8 +23,14 @@ const discardPrompt = (result) => {
         type: 'checkbox',
         message: 'select cards to throw away',
         name: 'cards',
-        choices: [],        // implement choices array - look at the inquirer documentation,
-        validate: () => {}  // implement
+        choices: result.arr,        // implement choices array - look at the inquirer documentation,
+        validate: (answer) => { 
+            if (answer.length > 1 && answer.length < 4) {
+                findAndRemove(result.arr, throwaway)
+                return true
+            }
+            
+         }
     }])
 }
 
@@ -39,9 +45,21 @@ const print = cards => {
 }
 
 const play = () => {
+    const tempObj = {}
+    cards.deck()
+        .then(deck => cards.draw(deck.deck_id, 5))
+        .then(result => {
+            tempObj.id = result.deck_id
+            tempObj.arr = []
+            console.log(tempObj.id)    
+            result.cards.forEach(card => {
+                tempObj.arr.push(`${card.value} of ${card.suit}`)
+            })
+            discardPrompt(tempObj)   
+        }).catch(err => console.log(err))
 
 }
 
 module.exports = {
-    draw
+    draw, play
 }
