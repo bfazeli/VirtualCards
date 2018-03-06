@@ -25,28 +25,30 @@ const discardPrompt = (result) => {
         name: 'cards',
         choices: result.arr,        // implement choices array - look at the inquirer documentation,
         validate: (answer) => { 
-            if (answer.length > 1 && answer.length < 4) {
-                findAndRemove(result.arr, throwaway)
-                return true
-            }
-            
+            return (answer.length > 1 && answer.length < 5) 
          }
     }])
 }
 
 // HINT for #4 in Lab
 const findAndRemove = (current, throwaway) => {
-
+    return current.filter(item => !throwaway.cards.includes(item))
 }
 
 // HINT for #6 in Lab
 const print = cards => {
+    console.log('\n-- CARDS --')
+    cards.arr.forEach(card => {
+        console.log(card)
+    })
 
+    console.log('\n-- REMAING CARDS --')
+    console.log(cards.cardsLeft)
 }
 
 const play = () => {
     const tempObj = {}
-    cards.deck()
+    cards.deck(true)
         .then(deck => cards.draw(deck.deck_id, 5))
         .then(result => {
             tempObj.id = result.deck_id
@@ -55,7 +57,19 @@ const play = () => {
             result.cards.forEach(card => {
                 tempObj.arr.push(`${card.value} of ${card.suit}`)
             })
-            discardPrompt(tempObj)   
+            discardPrompt(tempObj)
+            .then(answer => {
+                tempObj.arr = findAndRemove(tempObj.arr, answer)
+                return tempObj.arr
+            })
+            .then(result => cards.draw(tempObj.id, 5 - result.length))
+            .then(result => {
+                result.cards.forEach(card => {
+                    tempObj.arr.push(`${card.value} of ${card.suit}`)
+                })
+                tempObj.cardsLeft = result.remaining
+                print(tempObj)
+            })
         }).catch(err => console.log(err))
 
 }
